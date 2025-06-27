@@ -1,13 +1,34 @@
 // MapComponent.js
-import React, { useEffect, useReducer, useRef } from 'react';
+import React, { useEffect, useReducer, useRef, useState } from 'react';
 import Map from '@arcgis/core/Map';
 import MapView from '@arcgis/core/views/MapView';
 import FeatureLayer from '@arcgis/core/layers/FeatureLayer'
 import Graphic from '@arcgis/core/Graphic'
 import Legend from '@arcgis/core/widgets/Legend'
 import { mapReducer, initialState } from './mapReducer';
+import QueryPanel from './QueryPanel';
 
 const MapComponent = () => {
+  //const [distance, setDistance]=useState(null)
+  //const [units, setUnits]=useState(null)
+  let distance = null;
+  let units = null;
+  const queryChange =(e)=>{
+      switch (e.target.value) {
+            // values set for distance query
+            case "distance":
+              distance = 0.5;
+              units = "miles";
+              //setDistance(0.5);
+              //setUnits("miles");
+              break;
+            default:
+              //setDistance(null);
+              //setUnits(null);
+              distance = null;
+              units = null;
+              break;
+  }}
   const [state, dispatch] = useReducer(mapReducer, initialState);
   const mapref=useRef(null)
   useEffect(() => {
@@ -53,8 +74,8 @@ const MapComponent = () => {
         view.ui.add("optionsDiv", "top-right");
 
         // additional query fields initially set to null for basic query
-        let distance = null;
-        let units = null;
+        //let distance = null;
+        //let units = null;
 
         //create graphic for mouse point click
         const pointGraphic = new Graphic({
@@ -81,7 +102,7 @@ const MapComponent = () => {
           }
         });
 
-        // when query type changes, set appropriate values
+        /*when query type changes, set appropriate values
         const queryOpts = document.getElementById("query-type");
 
         queryOpts.addEventListener("change", () => {
@@ -96,7 +117,7 @@ const MapComponent = () => {
               distance = null;
               units = null;
           }
-        });
+        }); */
         layer.load().then(() => {
           // Set the view extent to the data extent
           view.extent = layer.fullExtent;
@@ -144,19 +165,12 @@ const MapComponent = () => {
             dispatch({ type: 'SET_LAYER', payload: layer });
         }
      
-    }
-    
+    }    
   }, [mapref]);
 
   return <>
   <div ref={mapref} style={{ height: '100vh', width: '100%' }}></div>;
-  <div id="optionsDiv" className="esri-widget">
-      <p>Select a query type and click a point on the map to view the results.</p>
-      <select id="query-type" className="esri-widget">
-        <option value="basic">Basic Query</option>
-        <option value="distance">Query By Distance</option>
-      </select>
-    </div>
+  <QueryPanel onChange={queryChange}/>
   </>
 };
 
